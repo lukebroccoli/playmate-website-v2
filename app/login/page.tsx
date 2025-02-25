@@ -1,38 +1,63 @@
-"use client"
+// app/login/page.tsx
+"use client";
 
-import React, { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { EyeIcon, EyeOffIcon } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/hooks/use-auth"
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react"; // Add Loader2
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const { login, isAuthenticated } = useAuth()
-  const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false); // Add submitting state
+  const { isAuthenticated, isLoading, login } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    // If already authenticated, redirect to home page
-    if (isAuthenticated) {
-      router.push('/')
+    // If already authenticated and not loading, redirect to home
+    if (isAuthenticated && !isLoading) {
+      router.push("/");
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, isLoading, router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    
-    const success = login(username, password)
-    if (success) {
-      router.push('/')
-    } else {
-      setError("Invalid username or password")
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!username || !password) {
+      setError("Please enter both username and password");
+      return;
     }
+
+    setIsSubmitting(true);
+
+    try {
+      const success = await login(username, password);
+      if (success) {
+        router.push("/");
+      } else {
+        setError("Invalid username or password");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("An error occurred during login. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // If still loading auth state or already authenticated, show loading
+  if (isLoading || isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+      </div>
+    );
   }
 
   return (
@@ -41,10 +66,16 @@ export default function LoginPage() {
       <div className="flex-1 bg-gradient-to-br from-purple-600 to-purple-900 p-8 flex flex-col justify-center lg:p-12">
         <div className="max-w-xl mx-auto">
           <div className="text-white mb-6">
-            <svg viewBox="0 0 24 24" className="w-12 h-12 mb-4" fill="currentColor">
+            <svg
+              viewBox="0 0 24 24"
+              className="w-12 h-12 mb-4"
+              fill="currentColor"
+            >
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
             </svg>
-            <h1 className="text-4xl font-bold mb-4">Sign up to support your favorite creators</h1>
+            <h1 className="text-4xl font-bold mb-4">
+              Sign up to support your favorite creators
+            </h1>
           </div>
         </div>
       </div>
@@ -58,19 +89,19 @@ export default function LoginPage() {
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <Input 
-                type="text" 
-                placeholder="Username" 
-                className="w-full" 
+              <Input
+                type="text"
+                placeholder="Username"
+                className="w-full"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div className="space-y-2 relative">
-              <Input 
-                type={showPassword ? "text" : "password"} 
-                placeholder="Password" 
-                className="w-full pr-10" 
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                className="w-full pr-10"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -79,13 +110,32 @@ export default function LoginPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-5 text-gray-500 hover:text-purple-700"
               >
-                {showPassword ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                {showPassword ? (
+                  <EyeOffIcon className="h-5 w-5" />
+                ) : (
+                  <EyeIcon className="h-5 w-5" />
+                )}
               </button>
             </div>
             {error && <p className="text-red-500 text-sm">{error}</p>}
-            <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
-              LOG IN
+            <Button
+              type="submit"
+              className="w-full bg-purple-600 hover:bg-purple-700"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  LOGGING IN...
+                </>
+              ) : (
+                "LOG IN"
+              )}
             </Button>
+            {/* Add hint for test credentials */}
+            <p className="text-xs text-center text-muted-foreground">
+              In beta mode, contact admin for login details.
+            </p>
           </form>
 
           <div className="text-sm text-center text-gray-500">
@@ -170,5 +220,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

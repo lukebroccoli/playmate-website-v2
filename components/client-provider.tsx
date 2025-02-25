@@ -12,7 +12,7 @@ export function ClientProvider({ children }: { children: ReactNode }) {
   }, [])
 
   if (!mounted) {
-    return null
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
   }
 
   return <>{children}</>
