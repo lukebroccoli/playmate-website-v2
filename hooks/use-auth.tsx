@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return new Promise<boolean>((resolve) => {
       setTimeout(() => {
         // Hardcoded credentials for demo purposes
-        if (username === 'iamchinabingbong' && password === 'random') {
+        if (username === 'luketest' && password === 'random') {
           try {
             localStorage.setItem('auth', 'true')
             setIsAuthenticated(true)
