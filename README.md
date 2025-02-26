@@ -1,4 +1,6 @@
-# my-v0-project
+# Playmate, an onlyfans competitor. 
+
+TODO: need to figure out what are the key functions that onlyfans creators would want for me to build, and how I can deliver value asap for them to start using my product. 
 
 To install dependencies:
 
