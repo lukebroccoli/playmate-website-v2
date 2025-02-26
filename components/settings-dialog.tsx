@@ -1,6 +1,6 @@
 "use client"
 
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 import { HelpCircle, LogOut, Moon, Settings, Sun, User, Wallet } from "lucide-react"
@@ -23,6 +23,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-sm p-0 bg-background">
+      <DialogTitle className="sr-only">Settings and User Profile</DialogTitle>
         <div className="p-4 border-b">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold">

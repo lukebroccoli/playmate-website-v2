@@ -1,26 +1,28 @@
-// src/app/layout.tsx
-import { ThemeProvider } from '@/components/theme-provider'
-import '@/app/globals.css'
-import type { Metadata } from 'next'
-import { AuthProvider } from "@/hooks/use-auth"
+// app/layout.tsx
 import { ClientProvider } from "@/components/client-provider"
+import { ThemeProvider } from "@/components/theme-provider"
+import { AuthProvider } from "@/hooks/use-auth"
+import { Toaster } from "@/components/ui/toaster"
+import { LayoutWrapper } from "@/components/layout-wrapper"
+import "./globals.css"
 
-
-export const metadata: Metadata = {
-  title: 'Playmate',
-  description: 'Social media platform for creators and fans',
-}
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en">
       <body>
         <ClientProvider>
-          <ThemeProvider defaultTheme="light" attribute="class">
-            <AuthProvider>
-              {children}
-            </AuthProvider>
-          </ThemeProvider>
+          <AuthProvider>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
+              <Toaster />
+            </ThemeProvider>
+          </AuthProvider>
         </ClientProvider>
       </body>
     </html>

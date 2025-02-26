@@ -1,3 +1,4 @@
+// app/profile/page.tsx
 import { ArrowLeft, Share2, Settings } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -7,7 +8,7 @@ import { SpotifyConnect } from "@/components/spotify-connect"
 
 export default function ProfilePage() {
   return (
-    <div className="min-h-screen bg-background">
+    <>
       {/* Header */}
       <div className="border-b border-border">
         <div className="flex items-center p-4 gap-4">
@@ -81,7 +82,6 @@ export default function ProfilePage() {
       <div className="p-4 lg:hidden">
         <SpotifyConnect />
       </div>
-    </div>
+    </>
   )
 }
-

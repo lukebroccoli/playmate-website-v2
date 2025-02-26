@@ -1,37 +1,54 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { ImageIcon, BarChart2, HelpCircle, Type, Plus, Minus, MoreVertical, GripVertical, Upload } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
-import { useState } from "react"
-import { cn } from "@/lib/utils"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core"
+import {
+  ImageIcon,
+  BarChart2,
+  HelpCircle,
+  Type,
+  Plus,
+  Minus,
+  MoreVertical,
+  GripVertical,
+  Upload,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   useSortable,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface NewPostModalProps {
-  isOpen: boolean
-  onClose: () => void
-  initialPostType: PostType
+  isOpen: boolean;
+  onClose: () => void;
+  initialPostType: PostType;
 }
 
-type PostType = "text" | "poll" | "quiz" | "image"
+type PostType = "text" | "poll" | "quiz" | "image";
 
 interface PollOption {
-  id: string
-  text: string
-  isCorrect?: boolean
+  id: string;
+  text: string;
+  isCorrect?: boolean;
 }
 
 function SortableOption({
@@ -42,26 +59,33 @@ function SortableOption({
   onChange,
   onCorrectChange,
 }: {
-  option: PollOption
-  index: number
-  postType: PostType
-  onRemove: () => void
-  onChange: (text: string) => void
-  onCorrectChange: () => void
+  option: PollOption;
+  index: number;
+  postType: PostType;
+  onRemove: () => void;
+  onChange: (text: string) => void;
+  onCorrectChange: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: option.id })
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: option.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-  }
+  };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center gap-2 mb-2">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-2 mb-2"
+    >
       <div {...attributes} {...listeners}>
         <GripVertical className="h-5 w-5 text-gray-400 cursor-move" />
       </div>
-      <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs">{index + 1}</div>
+      <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs">
+        {index + 1}
+      </div>
       <Input
         value={option.text}
         onChange={(e) => onChange(e.target.value)}
@@ -69,95 +93,123 @@ function SortableOption({
         className="flex-1"
       />
       {postType === "quiz" && (
-        <Button variant={option.isCorrect ? "default" : "outline"} size="sm" onClick={onCorrectChange}>
+        <Button
+          variant={option.isCorrect ? "default" : "outline"}
+          size="sm"
+          onClick={onCorrectChange}
+        >
           Correct
         </Button>
       )}
-      <Button variant="ghost" size="icon" className="rounded-full" onClick={onRemove}>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="rounded-full"
+        onClick={onRemove}
+      >
         <Minus className="h-4 w-4" />
       </Button>
     </div>
-  )
+  );
 }
 
-export function NewPostModal({ isOpen, onClose, initialPostType }: NewPostModalProps) {
-  const [postType, setPostType] = useState<PostType>(initialPostType)
-  const [postContent, setPostContent] = useState("")
+export function NewPostModal({
+  isOpen,
+  onClose,
+  initialPostType,
+}: NewPostModalProps) {
+  const [postType, setPostType] = useState<PostType>(initialPostType);
+  const [postContent, setPostContent] = useState("");
   const [pollOptions, setPollOptions] = useState<PollOption[]>([
     { id: "1", text: "" },
     { id: "2", text: "" },
-  ])
-  const [pollDuration, setPollDuration] = useState("7")
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  ]);
+  const [pollDuration, setPollDuration] = useState("7");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  )
+    })
+  );
 
   const handleAddOption = () => {
     if (pollOptions.length < 4) {
-      setPollOptions([...pollOptions, { id: String(Date.now()), text: "" }])
+      setPollOptions([...pollOptions, { id: String(Date.now()), text: "" }]);
     }
-  }
+  };
 
   const handleRemoveOption = (id: string) => {
     if (pollOptions.length > 2) {
-      setPollOptions(pollOptions.filter((option) => option.id !== id))
+      setPollOptions(pollOptions.filter((option) => option.id !== id));
     }
-  }
+  };
 
   const handleOptionChange = (id: string, text: string) => {
-    setPollOptions(pollOptions.map((option) => (option.id === id ? { ...option, text } : option)))
-  }
+    setPollOptions(
+      pollOptions.map((option) =>
+        option.id === id ? { ...option, text } : option
+      )
+    );
+  };
 
   const handleCorrectAnswerChange = (id: string) => {
     setPollOptions(
       pollOptions.map((option) =>
-        option.id === id ? { ...option, isCorrect: true } : { ...option, isCorrect: false },
-      ),
-    )
-  }
+        option.id === id
+          ? { ...option, isCorrect: true }
+          : { ...option, isCorrect: false }
+      )
+    );
+  };
 
   const handleDragEnd = (event: any) => {
-    const { active, over } = event
+    const { active, over } = event;
 
     if (active.id !== over.id) {
       setPollOptions((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id)
-        const newIndex = items.findIndex((item) => item.id === over.id)
-        return arrayMove(items, oldIndex, newIndex)
-      })
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
     }
-  }
+  };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const file = event.target.files?.[0];
     if (file) {
-      setSelectedImage(file)
+      setSelectedImage(file);
     }
-  }
+  };
 
   const handleSubmit = () => {
     // Here you would typically send the post to your backend
-    console.log("Submitting post:", { postType, postContent, pollOptions, selectedImage })
-    setPostContent("")
+    console.log("Submitting post:", {
+      postType,
+      postContent,
+      pollOptions,
+      selectedImage,
+    });
+    setPostContent("");
     setPollOptions([
       { id: "1", text: "" },
       { id: "2", text: "" },
-    ])
-    setPostType("text")
-    setSelectedImage(null)
-    onClose()
-  }
+    ]);
+    setPostType("text");
+    setSelectedImage(null);
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] p-0">
+        <DialogTitle className="sr-only">New Post</DialogTitle>
         <div className="border-b p-4 flex items-center justify-between">
-          <Tabs value={postType} onValueChange={(value) => setPostType(value as PostType)}>
+          <Tabs
+            value={postType}
+            onValueChange={(value) => setPostType(value as PostType)}
+          >
             <TabsList className="grid grid-cols-4 h-9">
               <TabsTrigger value="text" className="text-xs">
                 Post
@@ -184,8 +236,15 @@ export function NewPostModal({ isOpen, onClose, initialPostType }: NewPostModalP
           />
 
           {(postType === "poll" || postType === "quiz") && (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={pollOptions.map((option) => option.id)} strategy={verticalListSortingStrategy}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={pollOptions.map((option) => option.id)}
+                strategy={verticalListSortingStrategy}
+              >
                 {pollOptions.map((option, index) => (
                   <SortableOption
                     key={option.id}
@@ -201,12 +260,17 @@ export function NewPostModal({ isOpen, onClose, initialPostType }: NewPostModalP
             </DndContext>
           )}
 
-          {(postType === "poll" || postType === "quiz") && pollOptions.length < 4 && (
-            <Button variant="outline" className="w-full mt-2" onClick={handleAddOption}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Option
-            </Button>
-          )}
+          {(postType === "poll" || postType === "quiz") &&
+            pollOptions.length < 4 && (
+              <Button
+                variant="outline"
+                className="w-full mt-2"
+                onClick={handleAddOption}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Option
+              </Button>
+            )}
 
           {(postType === "poll" || postType === "quiz") && (
             <div className="flex items-center gap-2 mt-4">
@@ -234,12 +298,22 @@ export function NewPostModal({ isOpen, onClose, initialPostType }: NewPostModalP
                 <Upload className="h-4 w-4 mr-2" />
                 Upload Image
               </Button>
-              <input id="image-upload" type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
               {selectedImage && (
                 <div className="mt-4">
-                  <p className="text-sm text-muted-foreground">Selected image: {selectedImage.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Selected image: {selectedImage.name}
+                  </p>
                   <img
-                    src={URL.createObjectURL(selectedImage) || "/placeholder.svg"}
+                    src={
+                      URL.createObjectURL(selectedImage) || "/placeholder.svg"
+                    }
                     alt="Selected"
                     className="mt-2 max-h-[200px] object-cover rounded-md"
                   />
@@ -273,14 +347,16 @@ export function NewPostModal({ isOpen, onClose, initialPostType }: NewPostModalP
               className={cn(
                 "bg-purple-600 hover:bg-purple-700",
                 (!postContent && postType === "text") ||
-                  ((postType === "poll" || postType === "quiz") && pollOptions.some((opt) => !opt.text)) ||
+                  ((postType === "poll" || postType === "quiz") &&
+                    pollOptions.some((opt) => !opt.text)) ||
                   (postType === "image" && !selectedImage)
                   ? "opacity-50 cursor-not-allowed"
-                  : "",
+                  : ""
               )}
               disabled={
                 (!postContent && postType === "text") ||
-                ((postType === "poll" || postType === "quiz") && pollOptions.some((opt) => !opt.text)) ||
+                ((postType === "poll" || postType === "quiz") &&
+                  pollOptions.some((opt) => !opt.text)) ||
                 (postType === "image" && !selectedImage)
               }
             >
@@ -290,6 +366,5 @@ export function NewPostModal({ isOpen, onClose, initialPostType }: NewPostModalP
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

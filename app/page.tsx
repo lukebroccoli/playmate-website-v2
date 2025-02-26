@@ -41,11 +41,11 @@ export default function HomePage() {
   // If authenticated, show the actual home page
   return (
     <div className="flex min-h-screen bg-background">
-      <LeftSidebar />
+      
       <main className="flex-1">
         <MainFeed />
       </main>
-      <TrendingSection />
+      
     </div>
   )
 }
